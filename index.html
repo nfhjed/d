@@ -20,7 +20,7 @@
       overflow: hidden; /* Prevents scrollbars completely */
       background-color: #000000;
       color: #ffffff;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: "Courier New", Courier, monospace;
       user-select: none;
     }
 
@@ -58,6 +58,7 @@
       justify-content: center;
       align-items: center;
       transition: all 0.2s ease;
+      font-family: inherit;
     }
 
     .fullscreen-btn:hover {
@@ -76,9 +77,8 @@
 
     .timer-display {
       font-size: clamp(4rem, 15vw, 10rem);
-      font-weight: 200;
+      font-weight: 400;
       letter-spacing: -2px;
-      font-variant-numeric: tabular-nums;
       margin-bottom: 20px;
     }
 
@@ -107,6 +107,7 @@
       font-size: 0.9rem;
       cursor: pointer;
       transition: all 0.2s ease;
+      font-family: inherit;
     }
 
     button.btn:hover {
@@ -141,6 +142,7 @@
       text-align: center;
       font-size: 0.9rem;
       outline: none;
+      font-family: inherit;
     }
 
     /* Bottom Left: Clock Display */
@@ -150,7 +152,6 @@
       left: 30px;
       font-size: 0.85rem;
       color: #888888;
-      font-weight: 300;
       letter-spacing: 0.5px;
     }
 
@@ -161,7 +162,6 @@
       right: 30px;
       font-size: 0.85rem;
       color: #888888;
-      font-weight: 300;
       letter-spacing: 0.5px;
     }
 
