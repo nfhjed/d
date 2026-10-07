@@ -145,7 +145,7 @@
       font-family: inherit;
     }
 
-    /* Bottom Left: Clock Display */
+    /* Bottom Left: Live Clock (Time Only) */
     .bottom-left-clock {
       position: absolute;
       bottom: 25px;
@@ -205,8 +205,8 @@
       </div>
     </div>
 
-    <!-- Bottom Left: Live Clock -->
-    <div class="bottom-left-clock" id="liveClock">--:-- ----------, - --------</div>
+    <!-- Bottom Left: Live Clock (Time Only) -->
+    <div class="bottom-left-clock" id="liveClock">--:--</div>
 
     <!-- Bottom Right: Live Date -->
     <div class="bottom-right-date" id="liveDate">--/--/----</div>
@@ -218,23 +218,16 @@
     function updateClockAndDate() {
       const now = new Date();
 
-      // Format Time: "11:21 Wednesday, 7 October"
+      // Time Only: "11:27"
       const hours = String(now.getHours()).padStart(2, '0');
       const minutes = String(now.getMinutes()).padStart(2, '0');
-      const weekday = now.toLocaleDateString('en-GB', { weekday: 'long' });
-      const day = now.getDate();
-      const month = now.toLocaleDateString('en-GB', { month: 'long' });
+      document.getElementById('liveClock').textContent = `${hours}:${minutes}`;
 
-      const clockString = `${hours}:${minutes} ${weekday}, ${day} ${month}`;
-      document.getElementById('liveClock').textContent = clockString;
-
-      // Format Date: "07/10/2026"
-      const dayPadded = String(day).padStart(2, '0');
+      // Date: "07/10/2026"
+      const dayPadded = String(now.getDate()).padStart(2, '0');
       const monthPadded = String(now.getMonth() + 1).padStart(2, '0');
       const year = now.getFullYear();
-
-      const dateString = `${dayPadded}/${monthPadded}/${year}`;
-      document.getElementById('liveDate').textContent = dateString;
+      document.getElementById('liveDate').textContent = `${dayPadded}/${monthPadded}/${year}`;
     }
 
     updateClockAndDate();
