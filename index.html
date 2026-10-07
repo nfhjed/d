@@ -227,6 +227,11 @@
       pointer-events: none;
     }
 
+    /* Hidden element style */
+    .is-hidden {
+      display: none !important;
+    }
+
     /* Responsive adjustments for mobile screens */
     @media (max-width: 768px) {
       .notes-container {
@@ -253,7 +258,7 @@
     
     <!-- Top Right: Fullscreen Toggle -->
     <div class="top-right-controls auto-hide" id="topRightControls">
-      <button class="fullscreen-btn" id="fullscreenBtn" title="Toggle Fullscreen">⛶</button>
+      <button class="fullscreen-btn" id="fullscreenBtn" title="Toggle Fullscreen (F)">⛶</button>
     </div>
 
     <!-- Left Side: Notes Input Box -->
@@ -294,6 +299,23 @@
   </div>
 
   <script>
+    // --- Device Detection: iPad Detection ---
+    function isIPadDevice() {
+      const ua = navigator.userAgent || navigator.vendor || window.opera;
+      // Traditional iPad userAgent string
+      const isTraditionalIPad = /iPad/i.test(ua);
+      // iPadOS 13+ reports as Macintosh in UA, so check for multi-touch capability
+      const isMacIntelWithTouch = /Macintosh/i.test(ua) && navigator.maxTouchPoints && navigator.maxTouchPoints > 1;
+      
+      return isTraditionalIPad || isMacIntelWithTouch;
+    }
+
+    // Apply iPad-specific UI adjustment
+    if (isIPadDevice()) {
+      document.getElementById('liveClock').classList.add('is-hidden');
+      document.getElementById('liveDate').classList.add('is-hidden');
+    }
+
     // --- Clock and Date Logic ---
     function updateClockAndDate() {
       const now = new Date();
@@ -473,7 +495,7 @@
     showControls();
 
 
-    // --- Fullscreen API Logic ---
+    // --- Fullscreen API & Keyboard Shortcuts Logic ---
     const fullscreenBtn = document.getElementById('fullscreenBtn');
 
     function toggleFullscreen() {
@@ -493,6 +515,17 @@
     }
 
     fullscreenBtn.addEventListener('click', toggleFullscreen);
+
+    // Keyboard shortcut: Pressing 'f' or 'F' toggles fullscreen (unless typing in inputs)
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'f' || e.key === 'F') {
+        const isTyping = document.activeElement === timeInput || document.activeElement === notesInput;
+        if (!isTyping) {
+          e.preventDefault();
+          toggleFullscreen();
+        }
+      }
+    });
 
     function updateFullscreenButton() {
       if (document.fullscreenElement || document.webkitFullscreenElement) {
