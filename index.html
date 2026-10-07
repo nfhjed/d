@@ -36,6 +36,44 @@
       padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
     }
 
+    /* Left Floating Notes Panel */
+    .left-notes-container {
+      position: absolute;
+      left: 30px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: clamp(200px, 22vw, 320px);
+      z-index: 90;
+      transition: opacity 0.5s ease;
+    }
+
+    .notes-textarea {
+      width: 100%;
+      height: clamp(150px, 35vh, 400px);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      color: #ffffff;
+      padding: 14px;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      font-family: inherit;
+      resize: none;
+      outline: none;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .notes-textarea:focus {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .notes-textarea::placeholder {
+      color: #666666;
+    }
+
     /* Top Right Controls */
     .top-right-controls {
       position: absolute;
@@ -46,12 +84,12 @@
     }
 
     .fullscreen-btn {
-      background: rgba(255, 255, 255, 0.12);
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      color: #ffffff;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #888888;
       font-size: 1.2rem;
-      width: 44px;
-      height: 44px;
+      width: 42px;
+      height: 42px;
       border-radius: 50%;
       cursor: pointer;
       display: flex;
@@ -62,7 +100,8 @@
     }
 
     .fullscreen-btn:hover {
-      background: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.2);
+      color: #ffffff;
       transform: scale(1.05);
     }
 
@@ -72,17 +111,13 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      width: 100%;
-      max-width: 600px;
-      padding: 0 20px;
     }
 
     .timer-display {
-      font-size: clamp(4.5rem, 16vw, 11rem);
+      font-size: clamp(4rem, 15vw, 10rem);
       font-weight: 300;
       letter-spacing: -2px;
-      margin-bottom: 25px;
-      font-variant-numeric: tabular-nums;
+      margin-bottom: 20px;
     }
 
     /* Auto-hiding control panel */
@@ -90,66 +125,59 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 16px;
+      gap: 15px;
       transition: opacity 0.5s ease;
-      width: 100%;
     }
 
-    /* Clearly visible Text Input Group */
     .time-input-group {
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 10px;
-      width: 100%;
-      max-width: 320px;
+      gap: 8px;
     }
 
     .time-input-group input {
-      background: rgba(255, 255, 255, 0.15);
-      border: 1px solid rgba(255, 255, 255, 0.35);
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
       color: #ffffff;
-      padding: 10px 18px;
-      border-radius: 24px;
-      width: 180px;
+      padding: 8px 14px;
+      border-radius: 20px;
+      width: 140px;
       text-align: center;
-      font-size: 1rem;
+      font-size: 0.95rem;
       outline: none;
       font-family: inherit;
       transition: all 0.2s ease;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
 
     .time-input-group input:focus {
-      border-color: #ffffff;
-      background: rgba(255, 255, 255, 0.22);
-      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+      border-color: rgba(255, 255, 255, 0.5);
+      background: rgba(255, 255, 255, 0.12);
     }
 
     .time-input-group input::placeholder {
-      color: #aaaaaa;
+      color: #666666;
     }
 
     .action-buttons {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       justify-content: center;
     }
 
     button.btn {
-      background: rgba(255, 255, 255, 0.12);
-      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
       color: #ffffff;
-      padding: 10px 22px;
-      border-radius: 24px;
-      font-size: 0.95rem;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.9rem;
       cursor: pointer;
       transition: all 0.2s ease;
       font-family: inherit;
     }
 
     button.btn:hover {
-      background: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.2);
       transform: translateY(-1px);
     }
 
@@ -169,8 +197,8 @@
       position: absolute;
       bottom: 25px;
       left: 30px;
-      font-size: 0.9rem;
-      color: #a0a0a0;
+      font-size: 0.85rem;
+      color: #888888;
       letter-spacing: 0.5px;
     }
 
@@ -179,8 +207,8 @@
       position: absolute;
       bottom: 25px;
       right: 30px;
-      font-size: 0.9rem;
-      color: #a0a0a0;
+      font-size: 0.85rem;
+      color: #888888;
       letter-spacing: 0.5px;
     }
 
@@ -200,12 +228,22 @@
       <button class="fullscreen-btn" id="fullscreenBtn" title="Toggle Fullscreen">⛶</button>
     </div>
 
+    <!-- Left Side: Collapsible Notes Panel -->
+    <div class="left-notes-container auto-hide" id="notesPanel">
+      <textarea 
+        class="notes-textarea" 
+        id="notesInput" 
+        placeholder="Type notes here..."
+        spellcheck="false"
+      ></textarea>
+    </div>
+
     <!-- Center: Customizable Timer -->
     <div class="timer-container">
       <div class="timer-display" id="timerDisplay">10:00</div>
 
       <div class="controls-panel auto-hide" id="controlsPanel">
-        <!-- Clear, Prominent Flexible Text Input Box -->
+        <!-- Flexible Time Text Input -->
         <div class="time-input-group">
           <input type="text" id="timeInput" placeholder="e.g. 1h30m" autocomplete="off" spellcheck="false" />
           <button class="btn" onclick="applyTimeInput()">Set</button>
@@ -232,7 +270,7 @@
     function updateClockAndDate() {
       const now = new Date();
 
-      // Time Only: "11:34"
+      // Time Only: "11:35"
       const hours = String(now.getHours()).padStart(2, '0');
       const minutes = String(now.getMinutes()).padStart(2, '0');
       document.getElementById('liveClock').textContent = `${hours}:${minutes}`;
@@ -318,13 +356,11 @@
         timeInput.value = '';
         timeInput.blur();
       } else {
-        // Red border feedback if string couldn't be parsed
-        timeInput.style.borderColor = '#ff4d4d';
-        setTimeout(() => { timeInput.style.borderColor = ''; }, 1200);
+        timeInput.style.borderColor = '#ff5555';
+        setTimeout(() => { timeInput.style.borderColor = ''; }, 1000);
       }
     }
 
-    // Allow hitting Enter key in input field
     timeInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         applyTimeInput();
@@ -369,27 +405,49 @@
     renderTimer();
 
 
-    // --- Auto-Hide UI Controls Logic ---
+    // --- Auto-Hide UI Controls & Notes Logic ---
     let idleTimeout = null;
     const autoHideElements = document.querySelectorAll('.auto-hide');
+    const notesPanel = document.getElementById('notesPanel');
+    const notesInput = document.getElementById('notesInput');
 
     function showControls() {
-      autoHideElements.forEach(el => el.classList.remove('fade-out'));
+      autoHideElements.forEach(el => {
+        // If it's the notes panel and contains text, do NOT fade out
+        if (el === notesPanel && notesInput.value.trim() !== '') {
+          el.classList.remove('fade-out');
+          return;
+        }
+        el.classList.remove('fade-out');
+      });
+
       clearTimeout(idleTimeout);
-      
-      // Do not auto-hide while typing in the input box
-      if (document.activeElement === timeInput) return;
+
+      // Do not auto-hide while typing in any input field
+      if (document.activeElement === timeInput || document.activeElement === notesInput) return;
 
       idleTimeout = setTimeout(() => {
-        autoHideElements.forEach(el => el.classList.add('fade-out'));
-      }, 3500);
+        autoHideElements.forEach(el => {
+          // Keep notes panel visible if something is written on it
+          if (el === notesPanel && notesInput.value.trim() !== '') {
+            return;
+          }
+          el.classList.add('fade-out');
+        });
+      }, 3000);
     }
 
     document.addEventListener('mousemove', showControls);
     document.addEventListener('touchstart', showControls);
     document.addEventListener('keydown', showControls);
+
     timeInput.addEventListener('focus', () => clearTimeout(idleTimeout));
     timeInput.addEventListener('blur', showControls);
+
+    notesInput.addEventListener('focus', () => clearTimeout(idleTimeout));
+    notesInput.addEventListener('blur', showControls);
+    notesInput.addEventListener('input', showControls);
+
     showControls();
 
 
