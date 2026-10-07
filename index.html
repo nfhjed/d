@@ -80,8 +80,8 @@
     .notes-textarea {
       width: 100%;
       height: clamp(180px, 40vh, 420px);
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.3);
+      background: transparent;
+      border: 1px solid transparent;
       border-radius: 16px;
       color: #ffffff;
       padding: 16px;
@@ -91,16 +91,16 @@
       resize: none;
       outline: none;
       transition: border-color 0.2s ease, background 0.2s ease;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      box-shadow: none;
     }
 
     .notes-textarea:focus {
-      background: rgba(255, 255, 255, 0.15);
-      border-color: #ffffff;
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.2);
     }
 
     .notes-textarea::placeholder {
-      color: #aaaaaa;
+      color: #777777;
     }
 
     /* Center Timer Block */
