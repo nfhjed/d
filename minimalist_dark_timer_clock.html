@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Minimalist Dark Timer & Clock</title>
+  
+  <style>
+    :root {
+      --bg-color: #000000;
+      --text-color: #ffffff;
+      --accent-color: #222222;
+      --subtle-text: #888888;
+      --highlight-color: #4caf50;
+    }
+
+    /* Completely disable scrolling and selection */
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden !important;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: "FreeSerif", "Free Serif", Georgia, serif;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: max(20px, env(safe-area-inset-top)) max(25px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(25px, env(safe-area-inset-left));
+      box-sizing: border-box;
+      cursor: default;
+    }
+
+    /* Hide cursor during inactivity */
+    body.user-inactive {
+      cursor: none;
+    }
+
+    .top-spacer {
+      flex: 1;
+    }
+
+    /* Main Central Timer Area */
+    .timer-container {
+      flex: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      max-width: 500px;
+    }
+
+    .timer-display {
+      font-size: clamp(3.5rem, 12vw, 7rem);
+      font-weight: 300;
+      letter-spacing: 2px;
+      font-variant-numeric: tabular-nums;
+      margin-bottom: 25px;
+      text-shadow: 0 0 15px rgba(255, 255, 255, 0.08);
+      transition: color 0.3s ease;
+    }
+
+    .timer-display.finished {
+      color: #ff4d4d;
+      animation: pulse 1s infinite alternate;
+    }
+
+    @keyframes pulse {
+      from { opacity: 1; }
+      to { opacity: 0.3; }
+    }
+
+    /* Interactive controls fade out when inactive */
+    .interactive-controls {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.8s ease;
+      opacity: 1;
+      visibility: visible;
+    }
+
+    body.user-inactive .interactive-controls {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    /* Inputs */
+    .timer-inputs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 25px;
+      align-items: center;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .input-group label {
+      font-size: 0.7rem;
+      color: var(--subtle-text);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 5px;
+    }
+
+    .timer-inputs input {
+      background-color: #0d0d0d;
+      border: 1px solid var(--accent-color);
+      color: var(--text-color);
+      font-family: inherit;
+      font-size: 1.25rem;
+      width: 60px;
+      height: 45px;
+      text-align: center;
+      border-radius: 6px;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    .timer-inputs input:focus {
+      border-color: #555;
+    }
+
+    .timer-inputs input::-webkit-outer-spin-button,
+    .timer-inputs input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    /* Presets */
+    .presets {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .btn-preset {
+      font-size: 0.8rem;
+      padding: 4px 12px;
+      border-radius: 12px;
+      border: 1px solid #1c1c1c;
+      color: var(--subtle-text);
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-preset:hover {
+      border-color: #444;
+      color: #fff;
+    }
+
+    /* Action Buttons */
+    .timer-controls {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+    }
+
+    .btn {
+      background: transparent;
+      color: var(--text-color);
+      border: 1px solid var(--accent-color);
+      font-family: inherit;
+      font-size: 0.95rem;
+      padding: 9px 22px;
+      border-radius: 20px;
+      cursor: pointer;
+      letter-spacing: 1px;
+      transition: all 0.2s ease;
+      min-width: 85px;
+    }
+
+    .btn:hover {
+      background-color: var(--text-color);
+      color: var(--bg-color);
+      border-color: var(--text-color);
+    }
+
+    .btn-start {
+      border-color: #1e4620;
+      color: #4caf50;
+    }
+
+    .btn-start:hover {
+      background-color: #4caf50;
+      color: #000;
+      border-color: #4caf50;
+    }
+
+    .btn-pause {
+      border-color: #5a4714;
+      color: #ffc107;
+    }
+
+    .btn-pause:hover {
+      background-color: #ffc107;
+      color: #000;
+      border-color: #ffc107;
+    }
+
+    /* Bottom Bar Layout */
+    .bottom-bar {
+      flex: 1;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .clock-display,
+    .date-display {
+      font-size: clamp(0.75rem, 1.5vw, 0.9rem);
+      letter-spacing: 0.8px;
+      color: var(--subtle-text);
+      font-variant-numeric: tabular-nums;
+      font-weight: 300;
+    }
+
+    .clock-display {
+      text-align: left;
+    }
+
+    .date-display {
+      text-align: right;
+    }
+
+    /* Modal dialog */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-box {
+      background: #111;
+      border: 1px solid #333;
+      padding: 25px 35px;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .modal-box h2 {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+      font-weight: normal;
+    }
+
+    .modal-box p {
+      color: var(--subtle-text);
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-spacer"></div>
+
+  <!-- Center Timer Area -->
+  <main class="timer-container">
+    <div id="timer-display" class="timer-display">00:05:00</div>
+
+    <div id="interactive-controls" class="interactive-controls">
+      <!-- Preset Quick Buttons -->
+      <div class="presets">
+        <button class="btn-preset" onclick="setPreset(1)">1m</button>
+        <button class="btn-preset" onclick="setPreset(5)">5m</button>
+        <button class="btn-preset" onclick="setPreset(15)">15m</button>
+        <button class="btn-preset" onclick="setPreset(25)">25m</button>
+        <button class="btn-preset" onclick="setPreset(60)">60m</button>
+      </div>
+
+      <!-- Time Inputs -->
+      <div class="timer-inputs">
+        <div class="input-group">
+          <input type="number" id="input-hrs" min="0" max="99" value="0" placeholder="00">
+          <label for="input-hrs">HRS</label>
+        </div>
+        <span style="font-size: 1.2rem; color: #444;">:</span>
+        <div class="input-group">
+          <input type="number" id="input-mins" min="0" max="59" value="5" placeholder="00">
+          <label for="input-mins">MIN</label>
+        </div>
+        <span style="font-size: 1.2rem; color: #444;">:</span>
+        <div class="input-group">
+          <input type="number" id="input-secs" min="0" max="59" value="0" placeholder="00">
+          <label for="input-secs">SEC</label>
+        </div>
+      </div>
+
+      <!-- Control Buttons -->
+      <div class="timer-controls">
+        <button id="btn-start" class="btn btn-start" onclick="toggleTimer()">Start</button>
+        <button id="btn-reset" class="btn" onclick="resetTimer()">Reset</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Bottom Bar: Clock on Left, Date on Right -->
+  <footer class="bottom-bar">
+    <div id="clock-display" class="clock-display">00:00</div>
+    <div id="date-display" class="date-display">Monday, 1 January</div>
+  </footer>
+
+  <!-- Alert Modal -->
+  <div id="alarm-modal" class="modal-overlay">
+    <div class="modal-box">
+      <h2>Timer Finished</h2>
+      <p>Your countdown complete.</p>
+      <button class="btn btn-start" onclick="closeModal()">Dismiss</button>
+    </div>
+  </div>
+
+  <script>
+    // Live Clock & Date Functionality
+    function updateLiveClockAndDate() {
+      const now = new Date();
+
+      // Bottom-Left Clock: "hh:mm"
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('clock-display').textContent = `${hours}:${minutes}`;
+
+      // Bottom-Right Date: "DDD, dd mmmm" (e.g. Wednesday, 7 October)
+      const weekday = now.toLocaleDateString('en-US', { weekday: 'long' });
+      const day = now.getDate();
+      const month = now.toLocaleDateString('en-US', { month: 'long' });
+      document.getElementById('date-display').textContent = `${weekday}, ${day} ${month}`;
+    }
+
+    setInterval(updateLiveClockAndDate, 1000);
+    updateLiveClockAndDate();
+
+    // Auto-Hiding Controls on Inactivity (3 seconds)
+    let inactivityTimer = null;
+    const INACTIVITY_DELAY = 3000;
+
+    function resetInactivityTimer() {
+      document.body.classList.remove('user-inactive');
+      clearTimeout(inactivityTimer);
+      inactivityTimer = setTimeout(() => {
+        // Only hide controls if input fields aren't active/focused
+        const activeEl = document.activeElement;
+        const isInputFocused = activeEl && activeEl.tagName === 'INPUT';
+        if (!isInputFocused) {
+          document.body.classList.add('user-inactive');
+        }
+      }, INACTIVITY_DELAY);
+    }
+
+    ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'].forEach(evt => {
+      window.addEventListener(evt, resetInactivityTimer, { passive: true });
+    });
+    resetInactivityTimer();
+
+    // Countdown Timer State & Controls
+    let timerInterval = null;
+    let totalSeconds = 300; // default 5 minutes
+    let remainingSeconds = 300;
+    let isRunning = false;
+
+    const displayEl = document.getElementById('timer-display');
+    const startBtn = document.getElementById('btn-start');
+    const inputHrs = document.getElementById('input-hrs');
+    const inputMins = document.getElementById('input-mins');
+    const inputSecs = document.getElementById('input-secs');
+
+    function formatTime(secs) {
+      const h = Math.floor(secs / 3600);
+      const m = Math.floor((secs % 3600) / 60);
+      const s = secs % 60;
+      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    function updateTimerDisplay() {
+      displayEl.textContent = formatTime(remainingSeconds);
+    }
+
+    function updateInputsFromSeconds(secs) {
+      inputHrs.value = Math.floor(secs / 3600);
+      inputMins.value = Math.floor((secs % 3600) / 60);
+      inputSecs.value = secs % 60;
+    }
+
+    function getSecondsFromInputs() {
+      const h = parseInt(inputHrs.value, 10) || 0;
+      const m = parseInt(inputMins.value, 10) || 0;
+      const s = parseInt(inputSecs.value, 10) || 0;
+      return (h * 3600) + (m * 60) + s;
+    }
+
+    function toggleTimer() {
+      if (isRunning) {
+        pauseTimer();
+      } else {
+        startTimer();
+      }
+    }
+
+    function startTimer() {
+      if (!isRunning) {
+        if (remainingSeconds <= 0) {
+          remainingSeconds = getSecondsFromInputs();
+          totalSeconds = remainingSeconds;
+        }
+        if (remainingSeconds <= 0) return;
+
+        isRunning = true;
+        startBtn.textContent = 'Pause';
+        startBtn.className = 'btn btn-pause';
+        displayEl.classList.remove('finished');
+
+        timerInterval = setInterval(() => {
+          remainingSeconds--;
+          updateTimerDisplay();
+
+          if (remainingSeconds <= 0) {
+            clearInterval(timerInterval);
+            isRunning = false;
+            startBtn.textContent = 'Start';
+            startBtn.className = 'btn btn-start';
+            displayEl.classList.add('finished');
+            document.getElementById('alarm-modal').style.display = 'flex';
+          }
+        }, 1000);
+      }
+    }
+
+    function pauseTimer() {
+      if (isRunning) {
+        clearInterval(timerInterval);
+        isRunning = false;
+        startBtn.textContent = 'Start';
+        startBtn.className = 'btn btn-start';
+      }
+    }
+
+    function resetTimer() {
+      pauseTimer();
+      remainingSeconds = getSecondsFromInputs();
+      totalSeconds = remainingSeconds;
+      displayEl.classList.remove('finished');
+      updateTimerDisplay();
+    }
+
+    function setPreset(minutes) {
+      pauseTimer();
+      inputHrs.value = 0;
+      inputMins.value = minutes;
+      inputSecs.value = 0;
+      remainingSeconds = minutes * 60;
+      totalSeconds = remainingSeconds;
+      displayEl.classList.remove('finished');
+      updateTimerDisplay();
+    }
+
+    [inputHrs, inputMins, inputSecs].forEach(input => {
+      input.addEventListener('change', () => {
+        if (!isRunning) {
+          remainingSeconds = getSecondsFromInputs();
+          totalSeconds = remainingSeconds;
+          updateTimerDisplay();
+        }
+      });
+    });
+
+    function closeModal() {
+      document.getElementById('alarm-modal').style.display = 'none';
+      resetTimer();
+    }
+  </script>
+</body>
+</html>
