@@ -209,7 +209,7 @@
     <div class="bottom-left-clock" id="liveClock">--:--</div>
 
     <!-- Bottom Right: Live Date -->
-    <div class="bottom-right-date" id="liveDate">--/--/----</div>
+    <div class="bottom-right-date" id="liveDate">-/-/----</div>
 
   </div>
 
@@ -218,16 +218,16 @@
     function updateClockAndDate() {
       const now = new Date();
 
-      // Time Only: "11:27"
+      // Time Only: "11:30"
       const hours = String(now.getHours()).padStart(2, '0');
       const minutes = String(now.getMinutes()).padStart(2, '0');
       document.getElementById('liveClock').textContent = `${hours}:${minutes}`;
 
-      // Date: "07/10/2026"
-      const dayPadded = String(now.getDate()).padStart(2, '0');
+      // Date Format: "7/10/2026"
+      const day = now.getDate();
       const monthPadded = String(now.getMonth() + 1).padStart(2, '0');
       const year = now.getFullYear();
-      document.getElementById('liveDate').textContent = `${dayPadded}/${monthPadded}/${year}`;
+      document.getElementById('liveDate').textContent = `${day}/${monthPadded}/${year}`;
     }
 
     updateClockAndDate();
