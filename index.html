@@ -314,6 +314,7 @@
     if (isIPadDevice()) {
       document.getElementById('liveClock').classList.add('is-hidden');
       document.getElementById('liveDate').classList.add('is-hidden');
+      document.getElementById('topRightControls').classList.add('is-hidden');
     }
 
     // --- Clock and Date Logic ---
@@ -515,10 +516,10 @@
     }
 
     fullscreenBtn.addEventListener('click', toggleFullscreen);
-
-    // Keyboard shortcut: Pressing 'f' or 'F' toggles fullscreen (unless typing in inputs)
+    // Keyboard shortcut: Pressing 'f' or 'F' toggles fullscreen (unless typing in inputs or on iPad)
     window.addEventListener('keydown', (e) => {
       if (e.key === 'f' || e.key === 'F') {
+        if (isIPadDevice()) return;
         const isTyping = document.activeElement === timeInput || document.activeElement === notesInput;
         if (!isTyping) {
           e.preventDefault();
