@@ -91,10 +91,38 @@
       transition: opacity 0.5s ease;
     }
 
-    .preset-buttons, .action-buttons {
+    .time-input-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .time-input-group input {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+      padding: 8px 14px;
+      border-radius: 20px;
+      width: 140px;
+      text-align: center;
+      font-size: 0.95rem;
+      outline: none;
+      font-family: inherit;
+      transition: all 0.2s ease;
+    }
+
+    .time-input-group input:focus {
+      border-color: rgba(255, 255, 255, 0.5);
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .time-input-group input::placeholder {
+      color: #666666;
+    }
+
+    .action-buttons {
       display: flex;
       gap: 10px;
-      flex-wrap: wrap;
       justify-content: center;
     }
 
@@ -124,25 +152,6 @@
 
     button.btn-primary:hover {
       background: #e0e0e0;
-    }
-
-    .custom-input-group {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .custom-input-group input {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #ffffff;
-      padding: 6px 12px;
-      border-radius: 12px;
-      width: 70px;
-      text-align: center;
-      font-size: 0.9rem;
-      outline: none;
-      font-family: inherit;
     }
 
     /* Bottom Left: Live Clock (Time Only) */
@@ -186,15 +195,10 @@
       <div class="timer-display" id="timerDisplay">10:00</div>
 
       <div class="controls-panel auto-hide" id="controlsPanel">
-        <!-- Preset Timers -->
-        <div class="preset-buttons">
-          <button class="btn" onclick="setTimer(5)">5m</button>
-          <button class="btn" onclick="setTimer(10)">10m</button>
-          <button class="btn" onclick="setTimer(25)">25m</button>
-          <div class="custom-input-group">
-            <input type="number" id="customMin" min="1" max="999" placeholder="Min" />
-            <button class="btn" onclick="setCustomTimer()">Set</button>
-          </div>
+        <!-- Flexible Time Text Input -->
+        <div class="time-input-group">
+          <input type="text" id="timeInput" placeholder="e.g. 1h30m" autocomplete="off" spellcheck="false" />
+          <button class="btn" onclick="applyTimeInput()">Set</button>
         </div>
 
         <!-- Timer Controls -->
@@ -218,7 +222,7 @@
     function updateClockAndDate() {
       const now = new Date();
 
-      // Time Only: "11:31"
+      // Time Only: "11:33"
       const hours = String(now.getHours()).padStart(2, '0');
       const minutes = String(now.getMinutes()).padStart(2, '0');
       document.getElementById('liveClock').textContent = `${hours}:${minutes}`;
@@ -234,7 +238,45 @@
     setInterval(updateClockAndDate, 1000);
 
 
-    // --- Customizable Timer Logic ---
+    // --- Flexible Time Parsing Logic ---
+    function parseTimeString(inputStr) {
+      if (!inputStr) return null;
+      const str = inputStr.trim().toLowerCase();
+
+      // If user inputs a plain number (e.g. "10" or "45"), treat as minutes
+      if (/^\d+(\.\d+)?$/.test(str)) {
+        return Math.round(parseFloat(str) * 60);
+      }
+
+      let totalSeconds = 0;
+      let matched = false;
+
+      // Extract hours (e.g., 1h, 1.5h, 2hr, 2hours)
+      const hoursMatch = str.match(/(\d+(?:\.\d+)?)\s*(?:h|hr|hrs|hour|hours)/);
+      if (hoursMatch) {
+        totalSeconds += parseFloat(hoursMatch[1]) * 3600;
+        matched = true;
+      }
+
+      // Extract minutes (e.g., 30m, 30min, 30mins)
+      const minsMatch = str.match(/(\d+(?:\.\d+)?)\s*(?:m|min|mins|minute|minutes)/);
+      if (minsMatch) {
+        totalSeconds += parseFloat(minsMatch[1]) * 60;
+        matched = true;
+      }
+
+      // Extract seconds (e.g., 45s, 45sec, 45secs)
+      const secsMatch = str.match(/(\d+(?:\.\d+)?)\s*(?:s|sec|secs|second|seconds)/);
+      if (secsMatch) {
+        totalSeconds += parseFloat(secsMatch[1]);
+        matched = true;
+      }
+
+      return matched && totalSeconds > 0 ? Math.round(totalSeconds) : null;
+    }
+
+
+    // --- Timer Logic ---
     let initialSeconds = 600; // Default 10 minutes
     let remainingSeconds = 600;
     let timerInterval = null;
@@ -242,27 +284,42 @@
 
     const timerDisplay = document.getElementById('timerDisplay');
     const startBtn = document.getElementById('startBtn');
+    const timeInput = document.getElementById('timeInput');
 
     function renderTimer() {
-      const mins = Math.floor(remainingSeconds / 60);
+      const hrs = Math.floor(remainingSeconds / 3600);
+      const mins = Math.floor((remainingSeconds % 3600) / 60);
       const secs = remainingSeconds % 60;
-      timerDisplay.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-    }
 
-    function setTimer(minutes) {
-      pauseTimer();
-      initialSeconds = minutes * 60;
-      remainingSeconds = initialSeconds;
-      renderTimer();
-    }
-
-    function setCustomTimer() {
-      const val = parseInt(document.getElementById('customMin').value);
-      if (val && val > 0) {
-        setTimer(val);
-        document.getElementById('customMin').value = '';
+      if (hrs > 0) {
+        timerDisplay.textContent = `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      } else {
+        timerDisplay.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
       }
     }
+
+    function applyTimeInput() {
+      const parsedSecs = parseTimeString(timeInput.value);
+      if (parsedSecs && parsedSecs > 0) {
+        pauseTimer();
+        initialSeconds = parsedSecs;
+        remainingSeconds = initialSeconds;
+        renderTimer();
+        timeInput.value = '';
+        timeInput.blur();
+      } else {
+        // Simple shake / focus visual indication if input couldn't be parsed
+        timeInput.style.borderColor = '#ff5555';
+        setTimeout(() => { timeInput.style.borderColor = ''; }, 1000);
+      }
+    }
+
+    // Allow hitting Enter in input field
+    timeInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        applyTimeInput();
+      }
+    });
 
     function toggleTimer() {
       if (isRunning) {
@@ -309,14 +366,20 @@
     function showControls() {
       autoHideElements.forEach(el => el.classList.remove('fade-out'));
       clearTimeout(idleTimeout);
+      
+      // Do not auto-hide while typing in the input box
+      if (document.activeElement === timeInput) return;
+
       idleTimeout = setTimeout(() => {
         autoHideElements.forEach(el => el.classList.add('fade-out'));
-      }, 3000); // Hides after 3 seconds of inactivity
+      }, 3000);
     }
 
     document.addEventListener('mousemove', showControls);
     document.addEventListener('touchstart', showControls);
     document.addEventListener('keydown', showControls);
+    timeInput.addEventListener('focus', () => clearTimeout(idleTimeout));
+    timeInput.addEventListener('blur', showControls);
     showControls();
 
 
