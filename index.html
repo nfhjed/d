@@ -2,412 +2,273 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Minimalist Dark Timer & Clock</title>
-  
-  <style>
-    :root {
-      --bg-color: #000000;
-      --text-color: #ffffff;
-      --accent-color: #222222;
-      --subtle-text: #888888;
-      --highlight-color: #4caf50;
-    }
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
-    /* Completely disable scrolling and selection */
-    html, body {
+  <title>Minimalist Timer & Clock</title>
+  <style>
+    * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
+    }
+
+    html, body {
       width: 100vw;
       height: 100vh;
-      overflow: hidden !important;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      font-family: "FreeSerif", "Free Serif", Georgia, serif;
+      overflow: hidden; /* Prevents scrollbars completely */
+      background-color: #000000;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       user-select: none;
-      -webkit-user-select: none;
     }
 
-    body {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      align-items: center;
-      padding: max(20px, env(safe-area-inset-top)) max(25px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(25px, env(safe-area-inset-left));
-      box-sizing: border-box;
-      cursor: default;
-    }
-
-    /* Hide cursor during inactivity */
-    body.user-inactive {
-      cursor: none;
-    }
-
-    .top-spacer {
-      flex: 1;
-    }
-
-    /* Main Central Timer Area */
-    .timer-container {
-      flex: 2;
+    /* Container layout */
+    .app-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      width: 100%;
-      max-width: 500px;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+
+    /* Top Right Controls */
+    .top-right-controls {
+      position: absolute;
+      top: 25px;
+      right: 30px;
+      z-index: 100;
+      transition: opacity 0.5s ease;
+    }
+
+    .fullscreen-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #888888;
+      font-size: 1.2rem;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.2s ease;
+    }
+
+    .fullscreen-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+      transform: scale(1.05);
+    }
+
+    /* Center Timer Block */
+    .timer-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
 
     .timer-display {
-      font-size: clamp(3.5rem, 12vw, 7rem);
-      font-weight: 300;
-      letter-spacing: 2px;
+      font-size: clamp(4rem, 15vw, 10rem);
+      font-weight: 200;
+      letter-spacing: -2px;
       font-variant-numeric: tabular-nums;
-      margin-bottom: 25px;
-      text-shadow: 0 0 15px rgba(255, 255, 255, 0.08);
-      transition: color 0.3s ease;
-    }
-
-    .timer-display.finished {
-      color: #ff4d4d;
-      animation: pulse 1s infinite alternate;
-    }
-
-    @keyframes pulse {
-      from { opacity: 1; }
-      to { opacity: 0.3; }
-    }
-
-    /* Interactive controls fade out when inactive */
-    .interactive-controls {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.8s ease;
-      opacity: 1;
-      visibility: visible;
-    }
-
-    body.user-inactive .interactive-controls {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-    }
-
-    /* Inputs */
-    .timer-inputs {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 25px;
-      align-items: center;
-    }
-
-    .input-group {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .input-group label {
-      font-size: 0.7rem;
-      color: var(--subtle-text);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-top: 5px;
-    }
-
-    .timer-inputs input {
-      background-color: #0d0d0d;
-      border: 1px solid var(--accent-color);
-      color: var(--text-color);
-      font-family: inherit;
-      font-size: 1.25rem;
-      width: 60px;
-      height: 45px;
-      text-align: center;
-      border-radius: 6px;
-      outline: none;
-      transition: border-color 0.2s ease;
-    }
-
-    .timer-inputs input:focus {
-      border-color: #555;
-    }
-
-    .timer-inputs input::-webkit-outer-spin-button,
-    .timer-inputs input::-webkit-inner-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-    }
-
-    /* Presets */
-    .presets {
-      display: flex;
-      gap: 8px;
       margin-bottom: 20px;
     }
 
-    .btn-preset {
-      font-size: 0.8rem;
-      padding: 4px 12px;
-      border-radius: 12px;
-      border: 1px solid #1c1c1c;
-      color: var(--subtle-text);
-      background: transparent;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .btn-preset:hover {
-      border-color: #444;
-      color: #fff;
-    }
-
-    /* Action Buttons */
-    .timer-controls {
+    /* Auto-hiding control panel */
+    .controls-panel {
       display: flex;
+      flex-direction: column;
+      align-items: center;
       gap: 15px;
-      justify-content: center;
+      transition: opacity 0.5s ease;
     }
 
-    .btn {
-      background: transparent;
-      color: var(--text-color);
-      border: 1px solid var(--accent-color);
-      font-family: inherit;
-      font-size: 0.95rem;
-      padding: 9px 22px;
-      border-radius: 20px;
-      cursor: pointer;
-      letter-spacing: 1px;
-      transition: all 0.2s ease;
-      min-width: 85px;
-    }
-
-    .btn:hover {
-      background-color: var(--text-color);
-      color: var(--bg-color);
-      border-color: var(--text-color);
-    }
-
-    .btn-start {
-      border-color: #1e4620;
-      color: #4caf50;
-    }
-
-    .btn-start:hover {
-      background-color: #4caf50;
-      color: #000;
-      border-color: #4caf50;
-    }
-
-    .btn-pause {
-      border-color: #5a4714;
-      color: #ffc107;
-    }
-
-    .btn-pause:hover {
-      background-color: #ffc107;
-      color: #000;
-      border-color: #ffc107;
-    }
-
-    /* Bottom Bar Layout */
-    .bottom-bar {
-      flex: 1;
-      width: 100%;
+    .preset-buttons, .action-buttons {
       display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-    }
-
-    .clock-display,
-    .date-display {
-      font-size: clamp(0.75rem, 1.5vw, 0.9rem);
-      letter-spacing: 0.8px;
-      color: var(--subtle-text);
-      font-variant-numeric: tabular-nums;
-      font-weight: 300;
-    }
-
-    .clock-display {
-      text-align: left;
-    }
-
-    .date-display {
-      text-align: right;
-    }
-
-    /* Modal dialog */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.85);
+      gap: 10px;
+      flex-wrap: wrap;
       justify-content: center;
-      align-items: center;
-      z-index: 1000;
     }
 
-    .modal-box {
-      background: #111;
-      border: 1px solid #333;
-      padding: 25px 35px;
-      border-radius: 12px;
-      text-align: center;
-    }
-
-    .modal-box h2 {
-      font-size: 1.5rem;
-      margin-bottom: 10px;
-      font-weight: normal;
-    }
-
-    .modal-box p {
-      color: var(--subtle-text);
-      margin-bottom: 20px;
+    button.btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+      padding: 8px 16px;
+      border-radius: 20px;
       font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    button.btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px);
+    }
+
+    button.btn-primary {
+      background: #ffffff;
+      color: #000000;
+      border: none;
+      font-weight: 600;
+    }
+
+    button.btn-primary:hover {
+      background: #e0e0e0;
+    }
+
+    .custom-input-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .custom-input-group input {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+      padding: 6px 12px;
+      border-radius: 12px;
+      width: 70px;
+      text-align: center;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    /* Bottom Left: Clock Display */
+    .bottom-left-clock {
+      position: absolute;
+      bottom: 25px;
+      left: 30px;
+      font-size: 0.85rem;
+      color: #888888;
+      font-weight: 300;
+      letter-spacing: 0.5px;
+    }
+
+    /* Bottom Right: Date Display */
+    .bottom-right-date {
+      position: absolute;
+      bottom: 25px;
+      right: 30px;
+      font-size: 0.85rem;
+      color: #888888;
+      font-weight: 300;
+      letter-spacing: 0.5px;
+    }
+
+    /* Auto-hide class applied by JavaScript */
+    .fade-out {
+      opacity: 0;
+      pointer-events: none;
     }
   </style>
 </head>
 <body>
 
-  <div class="top-spacer"></div>
+  <div class="app-container" id="app">
+    
+    <!-- Top Right: Fullscreen Toggle -->
+    <div class="top-right-controls auto-hide" id="topRightControls">
+      <button class="fullscreen-btn" id="fullscreenBtn" title="Toggle Fullscreen">⛶</button>
+    </div>
 
-  <!-- Center Timer Area -->
-  <main class="timer-container">
-    <div id="timer-display" class="timer-display">00:05:00</div>
+    <!-- Center: Customizable Timer -->
+    <div class="timer-container">
+      <div class="timer-display" id="timerDisplay">10:00</div>
 
-    <div id="interactive-controls" class="interactive-controls">
-      <!-- Preset Quick Buttons -->
-      <div class="presets">
-        <button class="btn-preset" onclick="setPreset(1)">1m</button>
-        <button class="btn-preset" onclick="setPreset(5)">5m</button>
-        <button class="btn-preset" onclick="setPreset(15)">15m</button>
-        <button class="btn-preset" onclick="setPreset(25)">25m</button>
-        <button class="btn-preset" onclick="setPreset(60)">60m</button>
-      </div>
-
-      <!-- Time Inputs -->
-      <div class="timer-inputs">
-        <div class="input-group">
-          <input type="number" id="input-hrs" min="0" max="99" value="0" placeholder="00">
-          <label for="input-hrs">HRS</label>
+      <div class="controls-panel auto-hide" id="controlsPanel">
+        <!-- Preset Timers -->
+        <div class="preset-buttons">
+          <button class="btn" onclick="setTimer(5)">5m</button>
+          <button class="btn" onclick="setTimer(10)">10m</button>
+          <button class="btn" onclick="setTimer(25)">25m</button>
+          <div class="custom-input-group">
+            <input type="number" id="customMin" min="1" max="999" placeholder="Min" />
+            <button class="btn" onclick="setCustomTimer()">Set</button>
+          </div>
         </div>
-        <span style="font-size: 1.2rem; color: #444;">:</span>
-        <div class="input-group">
-          <input type="number" id="input-mins" min="0" max="59" value="5" placeholder="00">
-          <label for="input-mins">MIN</label>
-        </div>
-        <span style="font-size: 1.2rem; color: #444;">:</span>
-        <div class="input-group">
-          <input type="number" id="input-secs" min="0" max="59" value="0" placeholder="00">
-          <label for="input-secs">SEC</label>
-        </div>
-      </div>
 
-      <!-- Control Buttons -->
-      <div class="timer-controls">
-        <button id="btn-start" class="btn btn-start" onclick="toggleTimer()">Start</button>
-        <button id="btn-reset" class="btn" onclick="resetTimer()">Reset</button>
+        <!-- Timer Controls -->
+        <div class="action-buttons">
+          <button class="btn btn-primary" id="startBtn" onclick="toggleTimer()">Start</button>
+          <button class="btn" onclick="resetTimer()">Reset</button>
+        </div>
       </div>
     </div>
-  </main>
 
-  <!-- Bottom Bar: Clock on Left, Date on Right -->
-  <footer class="bottom-bar">
-    <div id="clock-display" class="clock-display">00:00</div>
-    <div id="date-display" class="date-display">Monday, 1 January</div>
-  </footer>
+    <!-- Bottom Left: Live Clock -->
+    <div class="bottom-left-clock" id="liveClock">--:-- ----------, - --------</div>
 
-  <!-- Alert Modal -->
-  <div id="alarm-modal" class="modal-overlay">
-    <div class="modal-box">
-      <h2>Timer Finished</h2>
-      <p>Your countdown complete.</p>
-      <button class="btn btn-start" onclick="closeModal()">Dismiss</button>
-    </div>
+    <!-- Bottom Right: Live Date -->
+    <div class="bottom-right-date" id="liveDate">--/--/----</div>
+
   </div>
 
   <script>
-    // Live Clock & Date Functionality
-    function updateLiveClockAndDate() {
+    // --- Clock and Date Logic ---
+    function updateClockAndDate() {
       const now = new Date();
 
-      // Bottom-Left Clock: "hh:mm"
+      // Format Time: "11:21 Wednesday, 7 October"
       const hours = String(now.getHours()).padStart(2, '0');
       const minutes = String(now.getMinutes()).padStart(2, '0');
-      document.getElementById('clock-display').textContent = `${hours}:${minutes}`;
-
-      // Bottom-Right Date: "DDD, dd mmmm" (e.g. Wednesday, 7 October)
-      const weekday = now.toLocaleDateString('en-US', { weekday: 'long' });
+      const weekday = now.toLocaleDateString('en-GB', { weekday: 'long' });
       const day = now.getDate();
-      const month = now.toLocaleDateString('en-US', { month: 'long' });
-      document.getElementById('date-display').textContent = `${weekday}, ${day} ${month}`;
+      const month = now.toLocaleDateString('en-GB', { month: 'long' });
+
+      const clockString = `${hours}:${minutes} ${weekday}, ${day} ${month}`;
+      document.getElementById('liveClock').textContent = clockString;
+
+      // Format Date: "07/10/2026"
+      const dayPadded = String(day).padStart(2, '0');
+      const monthPadded = String(now.getMonth() + 1).padStart(2, '0');
+      const year = now.getFullYear();
+
+      const dateString = `${dayPadded}/${monthPadded}/${year}`;
+      document.getElementById('liveDate').textContent = dateString;
     }
 
-    setInterval(updateLiveClockAndDate, 1000);
-    updateLiveClockAndDate();
+    updateClockAndDate();
+    setInterval(updateClockAndDate, 1000);
 
-    // Auto-Hiding Controls on Inactivity (3 seconds)
-    let inactivityTimer = null;
-    const INACTIVITY_DELAY = 3000;
 
-    function resetInactivityTimer() {
-      document.body.classList.remove('user-inactive');
-      clearTimeout(inactivityTimer);
-      inactivityTimer = setTimeout(() => {
-        // Only hide controls if input fields aren't active/focused
-        const activeEl = document.activeElement;
-        const isInputFocused = activeEl && activeEl.tagName === 'INPUT';
-        if (!isInputFocused) {
-          document.body.classList.add('user-inactive');
-        }
-      }, INACTIVITY_DELAY);
-    }
-
-    ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'].forEach(evt => {
-      window.addEventListener(evt, resetInactivityTimer, { passive: true });
-    });
-    resetInactivityTimer();
-
-    // Countdown Timer State & Controls
+    // --- Customizable Timer Logic ---
+    let initialSeconds = 600; // Default 10 minutes
+    let remainingSeconds = 600;
     let timerInterval = null;
-    let totalSeconds = 300; // default 5 minutes
-    let remainingSeconds = 300;
     let isRunning = false;
 
-    const displayEl = document.getElementById('timer-display');
-    const startBtn = document.getElementById('btn-start');
-    const inputHrs = document.getElementById('input-hrs');
-    const inputMins = document.getElementById('input-mins');
-    const inputSecs = document.getElementById('input-secs');
+    const timerDisplay = document.getElementById('timerDisplay');
+    const startBtn = document.getElementById('startBtn');
 
-    function formatTime(secs) {
-      const h = Math.floor(secs / 3600);
-      const m = Math.floor((secs % 3600) / 60);
-      const s = secs % 60;
-      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    function renderTimer() {
+      const mins = Math.floor(remainingSeconds / 60);
+      const secs = remainingSeconds % 60;
+      timerDisplay.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
     }
 
-    function updateTimerDisplay() {
-      displayEl.textContent = formatTime(remainingSeconds);
+    function setTimer(minutes) {
+      pauseTimer();
+      initialSeconds = minutes * 60;
+      remainingSeconds = initialSeconds;
+      renderTimer();
     }
 
-    function updateInputsFromSeconds(secs) {
-      inputHrs.value = Math.floor(secs / 3600);
-      inputMins.value = Math.floor((secs % 3600) / 60);
-      inputSecs.value = secs % 60;
-    }
-
-    function getSecondsFromInputs() {
-      const h = parseInt(inputHrs.value, 10) || 0;
-      const m = parseInt(inputMins.value, 10) || 0;
-      const s = parseInt(inputSecs.value, 10) || 0;
-      return (h * 3600) + (m * 60) + s;
+    function setCustomTimer() {
+      const val = parseInt(document.getElementById('customMin').value);
+      if (val && val > 0) {
+        setTimer(val);
+        document.getElementById('customMin').value = '';
+      }
     }
 
     function toggleTimer() {
@@ -419,76 +280,84 @@
     }
 
     function startTimer() {
-      if (!isRunning) {
+      if (remainingSeconds <= 0) return;
+      isRunning = true;
+      startBtn.textContent = 'Pause';
+      timerInterval = setInterval(() => {
+        remainingSeconds--;
+        renderTimer();
         if (remainingSeconds <= 0) {
-          remainingSeconds = getSecondsFromInputs();
-          totalSeconds = remainingSeconds;
+          clearInterval(timerInterval);
+          isRunning = false;
+          startBtn.textContent = 'Start';
         }
-        if (remainingSeconds <= 0) return;
-
-        isRunning = true;
-        startBtn.textContent = 'Pause';
-        startBtn.className = 'btn btn-pause';
-        displayEl.classList.remove('finished');
-
-        timerInterval = setInterval(() => {
-          remainingSeconds--;
-          updateTimerDisplay();
-
-          if (remainingSeconds <= 0) {
-            clearInterval(timerInterval);
-            isRunning = false;
-            startBtn.textContent = 'Start';
-            startBtn.className = 'btn btn-start';
-            displayEl.classList.add('finished');
-            document.getElementById('alarm-modal').style.display = 'flex';
-          }
-        }, 1000);
-      }
+      }, 1000);
     }
 
     function pauseTimer() {
-      if (isRunning) {
-        clearInterval(timerInterval);
-        isRunning = false;
-        startBtn.textContent = 'Start';
-        startBtn.className = 'btn btn-start';
-      }
+      isRunning = false;
+      startBtn.textContent = 'Start';
+      if (timerInterval) clearInterval(timerInterval);
     }
 
     function resetTimer() {
       pauseTimer();
-      remainingSeconds = getSecondsFromInputs();
-      totalSeconds = remainingSeconds;
-      displayEl.classList.remove('finished');
-      updateTimerDisplay();
+      remainingSeconds = initialSeconds;
+      renderTimer();
     }
 
-    function setPreset(minutes) {
-      pauseTimer();
-      inputHrs.value = 0;
-      inputMins.value = minutes;
-      inputSecs.value = 0;
-      remainingSeconds = minutes * 60;
-      totalSeconds = remainingSeconds;
-      displayEl.classList.remove('finished');
-      updateTimerDisplay();
+    renderTimer();
+
+
+    // --- Auto-Hide UI Controls Logic ---
+    let idleTimeout = null;
+    const autoHideElements = document.querySelectorAll('.auto-hide');
+
+    function showControls() {
+      autoHideElements.forEach(el => el.classList.remove('fade-out'));
+      clearTimeout(idleTimeout);
+      idleTimeout = setTimeout(() => {
+        autoHideElements.forEach(el => el.classList.add('fade-out'));
+      }, 3000); // Hides after 3 seconds of inactivity
     }
 
-    [inputHrs, inputMins, inputSecs].forEach(input => {
-      input.addEventListener('change', () => {
-        if (!isRunning) {
-          remainingSeconds = getSecondsFromInputs();
-          totalSeconds = remainingSeconds;
-          updateTimerDisplay();
+    document.addEventListener('mousemove', showControls);
+    document.addEventListener('touchstart', showControls);
+    document.addEventListener('keydown', showControls);
+    showControls();
+
+
+    // --- Fullscreen API Logic ---
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen();
+        } else if (document.documentElement.webkitRequestFullscreen) {
+          document.documentElement.webkitRequestFullscreen();
         }
-      });
-    });
-
-    function closeModal() {
-      document.getElementById('alarm-modal').style.display = 'none';
-      resetTimer();
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        }
+      }
     }
+
+    fullscreenBtn.addEventListener('click', toggleFullscreen);
+
+    function updateFullscreenButton() {
+      if (document.fullscreenElement || document.webkitFullscreenElement) {
+        fullscreenBtn.textContent = '✕';
+      } else {
+        fullscreenBtn.textContent = '⛶';
+      }
+    }
+
+    document.addEventListener('fullscreenchange', updateFullscreenButton);
+    document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
   </script>
 </body>
 </html>
