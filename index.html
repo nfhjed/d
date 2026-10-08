@@ -294,7 +294,7 @@
     <div class="bottom-left-clock" id="liveClock">--:--</div>
 
     <!-- Bottom Right: Live Date -->
-    <div class="bottom-right-date" id="liveDate">-/-/----</div>
+    <div class="bottom-right-date" id="liveDate">---, - --- ----</div>
 
   </div>
 
@@ -302,9 +302,7 @@
     // --- Device Detection: iPad Detection ---
     function isIPadDevice() {
       const ua = navigator.userAgent || navigator.vendor || window.opera;
-      // Traditional iPad userAgent string
       const isTraditionalIPad = /iPad/i.test(ua);
-      // iPadOS 13+ reports as Macintosh in UA, so check for multi-touch capability
       const isMacIntelWithTouch = /Macintosh/i.test(ua) && navigator.maxTouchPoints && navigator.maxTouchPoints > 1;
       
       return isTraditionalIPad || isMacIntelWithTouch;
@@ -326,11 +324,17 @@
       const minutes = String(now.getMinutes()).padStart(2, '0');
       document.getElementById('liveClock').textContent = `${hours}:${minutes}`;
 
-      // Date Format: "7/10/2026"
+      // Weekday and Month arrays
+      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+      const dayName = days[now.getDay()];
+      const monthName = months[now.getMonth()];
       const day = now.getDate();
-      const monthPadded = String(now.getMonth() + 1).padStart(2, '0');
       const year = now.getFullYear();
-      document.getElementById('liveDate').textContent = `${day}/${monthPadded}/${year}`;
+
+      // Date Format: "Friday, 9 October 2026"
+      document.getElementById('liveDate').textContent = `${dayName}, ${day} ${monthName} ${year}`;
     }
 
     updateClockAndDate();
